@@ -102,7 +102,10 @@ stamp_extension(
     command_names=list(KNOWN_COMMANDS),
 )
 `;
-  const result = spawnSync("python3", ["-c", script], { encoding: "utf8" });
+  const python = fs.existsSync(path.join(root, ".venv", "bin", "python"))
+    ? path.join(root, ".venv", "bin", "python")
+    : "python3";
+  const result = spawnSync(python, ["-c", script], { encoding: "utf8" });
   if (result.status !== 0) {
     throw new Error(result.stderr || result.stdout || "stamp failed");
   }

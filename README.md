@@ -36,12 +36,13 @@ Use the lowercase service name `browserboy`. Docker Compose expects that name.
 3. Select payload type `browserboy`.
 4. Select C2 profile `http`.
 5. Set `AESPSK` to `none`.
-6. Download the ZIP.
-7. Extract the ZIP.
-8. Open `chrome://extensions`.
-9. Enable Developer mode.
-10. Select **Load unpacked**.
-11. Point Chrome at the extracted folder.
+6. Leave `minify` on unless you debug the payload.
+7. Download the ZIP.
+8. Extract the ZIP.
+9. Open `chrome://extensions`.
+10. Enable Developer mode.
+11. Select **Load unpacked**.
+12. Point Chrome at the extracted folder.
 
 Chrome uses the OS trust store for TLS. If the C2 host uses a private CA, install that CA on the OS.
 

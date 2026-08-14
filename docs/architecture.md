@@ -10,7 +10,7 @@ BrowserBoy is a Mythic payload type. The build output is a Manifest V3 Chrome ex
 | `agent_code/extension` | Service worker, commands, sandbox, offscreen page |
 | Official `http` C2 profile | GET tasking, POST check-in and responses |
 
-The builder stamps `lib/config.js`, `lib/commands.js`, and `manifest.json`. Then it zips the extension folder.
+The builder stamps `lib/config.js`, `lib/commands.js`, and `manifest.json`. Then it minifies every `.js` file with `rjsmin` and zips the folder. Set the `minify` build parameter to off only for a readable lab payload.
 
 ## Agent loop
 

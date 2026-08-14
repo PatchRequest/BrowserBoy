@@ -1,7 +1,7 @@
 """Build helpers for the BrowserBoy Chrome extension.
 
-This module uses the Python standard library only so tests can import it
-without mythic_container.
+This module stays free of mythic_container so unit tests can import it.
+Minify uses rjsmin.
 """
 
 from __future__ import annotations
@@ -138,6 +138,24 @@ def stamp_text(template: str, replacements: dict[str, str]) -> str:
     return out
 
 
+def minify_js(source: str) -> str:
+    """Minify one ES module. Fails loud if rjsmin is missing."""
+    try:
+        import rjsmin
+    except ImportError as exc:
+        raise RuntimeError("rjsmin is required to minify extension JavaScript") from exc
+    return rjsmin.jsmin(source, keep_bang_comments=False)
+
+
+def minify_extension_js(extension_dir: Path) -> int:
+    count = 0
+    for path in sorted(extension_dir.rglob("*.js")):
+        original = path.read_text(encoding="utf-8")
+        path.write_text(minify_js(original), encoding="utf-8")
+        count += 1
+    return count
+
+
 def stamp_extension(
     source_dir: Path,
     dest_dir: Path,
@@ -145,6 +163,7 @@ def stamp_extension(
     config: dict[str, Any],
     manifest_fields: dict[str, str],
     command_names: list[str],
+    minify: bool = True,
 ) -> None:
     if dest_dir.exists():
         shutil.rmtree(dest_dir)
@@ -193,6 +212,9 @@ def stamp_extension(
         for path in commands_dir.glob("*.js"):
             if path.stem not in selected:
                 path.unlink()
+
+    if minify:
+        minify_extension_js(dest_dir)
 
 
 def zip_extension(extension_dir: Path, zip_path: Path) -> None:

