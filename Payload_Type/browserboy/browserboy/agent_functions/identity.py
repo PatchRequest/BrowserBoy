@@ -14,7 +14,7 @@ class IdentityCommand(CommandBase):
     cmd = "identity"
     needs_admin = False
     help_cmd = "identity"
-    description = "Return Chrome profile email, platform, and extension ID"
+    description = "Return profile email, platform, and extension ID"
     version = 1
     author = "@PatchRequest"
     attackmapping = ["T1033"]

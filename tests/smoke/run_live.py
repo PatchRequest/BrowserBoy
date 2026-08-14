@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Live smoke suite for every BrowserBoy command.
 
-Start Chromium with the built extension. Talk to a real Mythic instance.
+Start Chromium or Edge with the built extension. Talk to a real Mythic instance.
 Fail the process if any case fails.
 """
 
@@ -337,6 +337,7 @@ async def async_main(args: argparse.Namespace) -> int:
     env = os.environ.copy()
     env["BROWSERBOY_EXTENSION"] = str(extension)
     env["BROWSERBOY_HOLD_MS"] = str(args.hold_ms)
+    env["BROWSERBOY_CHANNEL"] = args.browser
     proc = subprocess.Popen(
         ["node", str(ROOT / "tests" / "smoke" / "hold_browser.mjs")],
         cwd=str(ROOT),
@@ -409,6 +410,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--extension",
         default=_env("BROWSERBOY_EXTENSION", "/tmp/browserboy-lab"),
+    )
+    parser.add_argument(
+        "--browser",
+        default=_env("BROWSERBOY_CHANNEL", "chromium"),
+        choices=["chromium", "msedge", "edge", "chrome"],
+        help="Playwright channel: chromium (default) or msedge",
     )
     parser.add_argument("--hold-ms", type=int, default=180000)
     parser.add_argument("--report", default=str(ROOT / "tests" / "smoke" / "last_report.json"))

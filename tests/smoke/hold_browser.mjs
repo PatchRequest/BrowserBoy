@@ -10,6 +10,16 @@ if (!extensionDir) {
 }
 
 const holdMs = Number(process.env.BROWSERBOY_HOLD_MS || 180000);
+const channelRaw = (process.env.BROWSERBOY_CHANNEL || "chromium").trim().toLowerCase();
+const channel =
+  channelRaw === "edge" || channelRaw === "msedge" || channelRaw === "microsoft-edge"
+    ? "msedge"
+    : channelRaw === "chromium" || channelRaw === "chrome"
+      ? "chromium"
+      : null;
+if (!channel) {
+  throw new Error(`unsupported BROWSERBOY_CHANNEL=${channelRaw}`);
+}
 const host = "127.0.0.1";
 
 const SMOKE_HTML = `<!doctype html>
@@ -52,11 +62,13 @@ const downloadUrl = `http://${host}:${port}/file.bin`;
 
 const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "browserboy-smoke-profile-"));
 const context = await chromium.launchPersistentContext(userDataDir, {
-  channel: "chromium",
+  channel,
   headless: true,
   args: [
     `--disable-extensions-except=${extensionDir}`,
     `--load-extension=${extensionDir}`,
+    "--no-first-run",
+    "--no-default-browser-check",
   ],
 });
 

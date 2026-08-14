@@ -25,7 +25,9 @@ exit
 
 ## identity
 
-Return Chrome profile email, platform, and extension ID.
+Return profile email, platform, and extension ID.
+
+Chrome can fill the Google profile email. Edge often returns an empty email. The command still returns platform and the extension ID.
 
 ```text
 identity

@@ -57,12 +57,12 @@ Chrome identity is set per payload. The Mythic UI still uses the BrowserBoy masc
 8. Leave `minify` on unless you debug the payload.
 9. Download the ZIP.
 10. Extract the ZIP.
-11. Open `chrome://extensions`.
+11. Open `edge://extensions` or `chrome://extensions`.
 12. Enable Developer mode.
 13. Select **Load unpacked**.
-14. Point Chrome at the extracted folder.
+14. Point the browser at the extracted folder.
 
-Chrome uses the OS trust store for TLS. If the C2 host uses a private CA, install that CA on the OS.
+The browser uses the OS trust store for TLS. If the C2 host uses a private CA, install that CA on the OS.
 
 ## Commands
 
@@ -100,7 +100,7 @@ See [docs/load.md](docs/load.md).
 - Check-in and responses: POST
 - Tasking: GET
 - Default poll: 10 s interval, 23 % jitter (HTTP profile)
-- Same Chrome profile and extension ID reuse the last callback UUID after a browser restart
+- Same browser profile and extension ID reuse the last callback UUID after a browser restart
 - v1 crypto: `AESPSK=none`
 - `encrypted_exchange_check` is not supported
 
@@ -115,13 +115,15 @@ node --test tests/protocol.test.mjs tests/timing.test.mjs
 python3 -m unittest tests.test_packaging
 ```
 
-Playwright mock-C2 test:
+Playwright mock-C2 and API tests:
 
 ```bash
 npx playwright test
+npx playwright install msedge
+BROWSERBOY_CHANNEL=msedge npx playwright test
 ```
 
-Live smoke suite (every command against Chrome + Mythic):
+Live smoke suite (every command against Chromium or Edge + Mythic):
 
 ```bash
 python3 -m venv .venv
@@ -129,6 +131,7 @@ python3 -m venv .venv
 export MYTHIC_ADMIN_USER=mythic_admin
 export MYTHIC_ADMIN_PASSWORD=...
 .venv/bin/python tests/smoke/run_live.py --extension /path/to/extracted
+.venv/bin/python tests/smoke/run_live.py --extension /path/to/extracted --browser msedge
 ```
 
 See [docs/testing.md](docs/testing.md).

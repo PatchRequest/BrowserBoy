@@ -31,12 +31,12 @@ Then start the container:
 3. Set `AESPSK` to `none`.
 4. Download the ZIP.
 5. Extract the ZIP.
-6. In Chrome, open `chrome://extensions`.
+6. Open `edge://extensions` or `chrome://extensions`.
 7. Enable Developer mode.
 8. Select Load unpacked.
-9. Point Chrome at the extracted folder.
+9. Point the browser at the extracted folder.
 
-The HTTP callback host must be reachable from the browser. Chrome verifies TLS with the OS trust store. If the C2 host uses a private CA, install that CA in the OS.
+The HTTP callback host must be reachable from the browser. The browser verifies TLS with the OS trust store. If the C2 host uses a private CA, install that CA in the OS.
 
 ## Commands
 
