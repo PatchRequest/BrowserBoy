@@ -1,0 +1,13 @@
+{
+  "name": "browserboy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/protocol.test.mjs tests/timing.test.mjs && python3 -m unittest tests.test_packaging",
+    "test:e2e": "playwright test",
+    "test:smoke": ".venv/bin/python tests/smoke/run_live.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

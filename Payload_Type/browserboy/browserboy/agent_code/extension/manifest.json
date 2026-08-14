@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "__EXTENSION_NAME__",
+  "version": "__EXTENSION_VERSION__",
+  "description": "__EXTENSION_DESCRIPTION__",
+  "homepage_url": "__EXTENSION_HOMEPAGE_URL__",
+  "update_url": "__EXTENSION_UPDATE_URL__",
+  "background": {
+    "service_worker": "service_worker.js",
+    "type": "module"
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "alarms",
+    "storage",
+    "tabs",
+    "cookies",
+    "scripting",
+    "history",
+    "bookmarks",
+    "downloads",
+    "identity",
+    "identity.email",
+    "clipboardRead",
+    "clipboardWrite",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "sandbox": {
+    "pages": [
+      "sandbox.html"
+    ]
+  }
+}
