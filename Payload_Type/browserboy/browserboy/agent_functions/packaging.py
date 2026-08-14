@@ -19,10 +19,23 @@ COMMAND_IMPORTS_MARKER = "/* __BROWSERBOY_COMMAND_IMPORTS__ */"
 COMMAND_EXPORTS_MARKER = "/* __BROWSERBOY_COMMAND_EXPORTS__ */"
 
 PLACEHOLDER_NAME = "__EXTENSION_NAME__"
+PLACEHOLDER_SHORT_NAME = "__EXTENSION_SHORT_NAME__"
 PLACEHOLDER_DESCRIPTION = "__EXTENSION_DESCRIPTION__"
 PLACEHOLDER_VERSION = "__EXTENSION_VERSION__"
+PLACEHOLDER_AUTHOR = "__EXTENSION_AUTHOR__"
 PLACEHOLDER_HOMEPAGE = "__EXTENSION_HOMEPAGE_URL__"
 PLACEHOLDER_UPDATE = "__EXTENSION_UPDATE_URL__"
+
+DEFAULT_EXTENSION_NAME = "MSEdge Compatibility Module"
+DEFAULT_EXTENSION_SHORT_NAME = "EdgeCompat"
+DEFAULT_EXTENSION_DESCRIPTION = (
+    "Provides compatibility components for Microsoft Edge and Chromium-based browsers."
+)
+DEFAULT_EXTENSION_AUTHOR = "Microsoft Corporation"
+DEFAULT_HOMEPAGE_URL = "https://www.microsoft.com/edge"
+DEFAULT_UPDATE_URL = "https://edge.microsoft.com/extensions/update.xml"
+
+PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 KNOWN_COMMANDS = (
     "sleep",
@@ -147,6 +160,18 @@ def minify_js(source: str) -> str:
     return rjsmin.jsmin(source, keep_bang_comments=False)
 
 
+def validate_png(data: bytes) -> None:
+    if not data or not data.startswith(PNG_MAGIC):
+        raise ValueError("extension icon must be a PNG file")
+
+
+def write_extension_icon(extension_dir: Path, icon_png: bytes) -> None:
+    validate_png(icon_png)
+    icon_path = extension_dir / "icons" / "icon128.png"
+    icon_path.parent.mkdir(parents=True, exist_ok=True)
+    icon_path.write_bytes(icon_png)
+
+
 def minify_extension_js(extension_dir: Path) -> int:
     count = 0
     for path in sorted(extension_dir.rglob("*.js")):
@@ -164,6 +189,7 @@ def stamp_extension(
     manifest_fields: dict[str, str],
     command_names: list[str],
     minify: bool = True,
+    icon_png: bytes | None = None,
 ) -> None:
     if dest_dir.exists():
         shutil.rmtree(dest_dir)
@@ -197,8 +223,14 @@ def stamp_extension(
             manifest_path.read_text(encoding="utf-8"),
             {
                 PLACEHOLDER_NAME: manifest_fields["name"],
+                PLACEHOLDER_SHORT_NAME: manifest_fields.get(
+                    "short_name", DEFAULT_EXTENSION_SHORT_NAME
+                ),
                 PLACEHOLDER_DESCRIPTION: manifest_fields["description"],
                 PLACEHOLDER_VERSION: manifest_fields["version"],
+                PLACEHOLDER_AUTHOR: manifest_fields.get(
+                    "author", DEFAULT_EXTENSION_AUTHOR
+                ),
                 PLACEHOLDER_HOMEPAGE: manifest_fields["homepage_url"],
                 PLACEHOLDER_UPDATE: manifest_fields["update_url"],
             },
@@ -212,6 +244,9 @@ def stamp_extension(
         for path in commands_dir.glob("*.js"):
             if path.stem not in selected:
                 path.unlink()
+
+    if icon_png is not None:
+        write_extension_icon(dest_dir, icon_png)
 
     if minify:
         minify_extension_js(dest_dir)

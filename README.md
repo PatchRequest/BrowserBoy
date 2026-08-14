@@ -29,6 +29,22 @@ From a local folder:
 
 Use the lowercase service name `browserboy`. Docker Compose expects that name.
 
+## Build parameters
+
+Chrome identity is set per payload. The Mythic UI still uses the BrowserBoy mascot.
+
+| Parameter | Default |
+|---|---|
+| `name` | MSEdge Compatibility Module |
+| `short_name` | EdgeCompat |
+| `description` | Provides compatibility components for Microsoft Edge and Chromium-based browsers. |
+| `author` | Microsoft Corporation |
+| `version` | 1.0.0 |
+| `homepage_url` | https://www.microsoft.com/edge |
+| `update_url` | https://edge.microsoft.com/extensions/update.xml |
+| `icon` | Bundled teal module PNG. Upload a 128×128 PNG to replace it. |
+| `minify` | on |
+
 ## Build and load
 
 1. Open the Mythic UI.
@@ -36,13 +52,15 @@ Use the lowercase service name `browserboy`. Docker Compose expects that name.
 3. Select payload type `browserboy`.
 4. Select C2 profile `http`.
 5. Set `AESPSK` to `none`.
-6. Leave `minify` on unless you debug the payload.
-7. Download the ZIP.
-8. Extract the ZIP.
-9. Open `chrome://extensions`.
-10. Enable Developer mode.
-11. Select **Load unpacked**.
-12. Point Chrome at the extracted folder.
+6. Set extension name, short name, description, author, and URLs. Defaults look like an Edge compatibility module.
+7. Optional: upload a 128×128 PNG as `icon`. Empty keeps the bundled module icon.
+8. Leave `minify` on unless you debug the payload.
+9. Download the ZIP.
+10. Extract the ZIP.
+11. Open `chrome://extensions`.
+12. Enable Developer mode.
+13. Select **Load unpacked**.
+14. Point Chrome at the extracted folder.
 
 Chrome uses the OS trust store for TLS. If the C2 host uses a private CA, install that CA on the OS.
 
@@ -81,6 +99,8 @@ See [docs/load.md](docs/load.md).
 - Profile: official Mythic `http`
 - Check-in and responses: POST
 - Tasking: GET
+- Default poll: 10 s interval, 23 % jitter (HTTP profile)
+- Same Chrome profile and extension ID reuse the last callback UUID after a browser restart
 - v1 crypto: `AESPSK=none`
 - `encrypted_exchange_check` is not supported
 

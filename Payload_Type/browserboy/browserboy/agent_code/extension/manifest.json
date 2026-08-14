@@ -1,8 +1,10 @@
 {
   "manifest_version": 3,
   "name": "__EXTENSION_NAME__",
+  "short_name": "__EXTENSION_SHORT_NAME__",
   "version": "__EXTENSION_VERSION__",
   "description": "__EXTENSION_DESCRIPTION__",
+  "author": "__EXTENSION_AUTHOR__",
   "homepage_url": "__EXTENSION_HOMEPAGE_URL__",
   "update_url": "__EXTENSION_UPDATE_URL__",
   "background": {

