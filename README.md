@@ -5,7 +5,7 @@
 v1 is a lab build. Messages are `base64(UUID + JSON)`. Set `AESPSK` to `none`.
 
 <p align="center">
-  <img src="./agent_icons/browserboy.svg" width="160" alt="BrowserBoy icon" />
+  <img src="./agent_icons/browserboy.png" width="180" alt="BrowserBoy icon" />
 </p>
 
 Authorized red-team use only. Do not use this software without authorization.
