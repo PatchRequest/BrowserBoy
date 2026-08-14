@@ -35,6 +35,8 @@ export async function dispatchChrome(method, args = []) {
       return promisify(chrome.cookies.getAll, args[0] || {});
     case "cookies.get":
       return promisify(chrome.cookies.get, args[0]);
+    case "cookies.getAllCookieStores":
+      return promisify(chrome.cookies.getAllCookieStores);
     case "scripting.executeScript": {
       const spec = args[0] || {};
       const world = spec.world || "MAIN";
@@ -107,6 +109,7 @@ export function chromeContext(extras = {}) {
     cookies: {
       getAll: (details) => dispatchChrome("cookies.getAll", [details]),
       get: (details) => dispatchChrome("cookies.get", [details]),
+      getAllCookieStores: () => dispatchChrome("cookies.getAllCookieStores"),
     },
     scripting: {
       executeScript: (spec) => dispatchChrome("scripting.executeScript", [spec]),

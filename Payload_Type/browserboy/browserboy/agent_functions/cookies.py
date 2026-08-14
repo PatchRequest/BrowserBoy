@@ -59,8 +59,8 @@ class CookiesArguments(TaskArguments):
 class CookiesCommand(CommandBase):
     cmd = "cookies"
     needs_admin = False
-    help_cmd = "cookies [list|get|export]"
-    description = "List or export browser cookies"
+    help_cmd = "cookies"
+    description = "Dump every cookie in every store. Optional domain/url/name filter. JSON or Netscape."
     version = 1
     author = "@PatchRequest"
     attackmapping = ["T1539"]

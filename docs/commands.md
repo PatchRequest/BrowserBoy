@@ -56,6 +56,8 @@ current
 
 ## cookies
 
+No filter dumps the full jar. The agent walks every cookie store, including incognito when the user enabled the extension there.
+
 | Parameter | Type | Required | Meaning |
 |---|---|---|---|
 | `action` | list / get / export | no | Default `list` |
@@ -66,8 +68,11 @@ current
 
 ```text
 cookies
-cookies -domain example.com -format netscape
+cookies -format netscape
+cookies -domain example.com
 ```
+
+HttpOnly cookies are included. Partitioned cookies (CHIPS) for a site without an open tab can be missing. Chrome does not give a global partitioned query.
 
 ## screenshot
 

@@ -44,6 +44,7 @@ function makeCtx() {
     cookies: {
       getAll: (details) => callCtx("cookies.getAll", [details]),
       get: (details) => callCtx("cookies.get", [details]),
+      getAllCookieStores: () => callCtx("cookies.getAllCookieStores"),
     },
     scripting: {
       executeScript: (spec) => callCtx("scripting.executeScript", [spec]),

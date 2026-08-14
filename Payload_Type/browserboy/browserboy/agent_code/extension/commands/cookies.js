@@ -7,6 +7,37 @@ function netscapeLine(cookie) {
   return [domain, includeSub, path, secure, expiry, cookie.name, cookie.value].join("\t");
 }
 
+function cookieKey(cookie) {
+  const partition = cookie.partitionKey?.topLevelSite || "";
+  return [cookie.storeId, cookie.domain, cookie.path, cookie.name, partition].join("|");
+}
+
+async function collectCookies(ctx, filter) {
+  let stores = [];
+  try {
+    stores = await ctx.cookies.getAllCookieStores();
+  } catch {
+    stores = [];
+  }
+  if (!Array.isArray(stores) || stores.length === 0) {
+    return ctx.cookies.getAll(filter);
+  }
+  const seen = new Set();
+  const out = [];
+  for (const store of stores) {
+    const batch = await ctx.cookies.getAll({ ...filter, storeId: store.id });
+    for (const cookie of batch) {
+      const key = cookieKey(cookie);
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      out.push(cookie);
+    }
+  }
+  return out;
+}
+
 export async function run(task, ctx) {
   const args = ctx.parseArgs(task);
   const action = args.action || "list";
@@ -30,7 +61,7 @@ export async function run(task, ctx) {
   if (args.name) {
     filter.name = args.name;
   }
-  const cookies = await ctx.cookies.getAll(filter);
+  const cookies = await collectCookies(ctx, filter);
   const format = args.format || "json";
   if (format === "netscape") {
     const lines = ["# Netscape HTTP Cookie File", ...cookies.map(netscapeLine)];

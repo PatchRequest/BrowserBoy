@@ -54,7 +54,7 @@ Chrome uses the OS trust store for TLS. If the C2 host uses a private CA, instal
 | `identity` | Profile email, platform, extension ID |
 | `tabs` | `list` / `create` / `close` / `update` / `reload` |
 | `current` | Active tab |
-| `cookies` | `list` / `get` / export JSON or Netscape |
+| `cookies` | Full jar dump. Optional domain filter. JSON or Netscape |
 | `screenshot` | Visible tab PNG |
 | `inject` | Run JS in a tab |
 | `history` | Search history |

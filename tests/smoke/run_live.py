@@ -238,6 +238,7 @@ def cases() -> list[Case]:
         Case("tabs_list", "tabs", {"action": "list"}, must_json_list()),
         Case("inject", "inject", params_inject, check_inject),
         Case("cookies", "cookies", params_cookies, check_cookies),
+        Case("cookies_all", "cookies", {"action": "list"}, check_cookies),
         Case("history", "history", {"query": "127.0.0.1", "max_results": 20}, check_history),
         Case("bookmarks", "bookmarks", {"action": "list"}, must_json_list()),
         Case("downloads", "downloads", {"limit": 20}, must_json_list()),

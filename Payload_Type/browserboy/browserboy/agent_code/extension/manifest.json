@@ -27,6 +27,7 @@
     "clipboardWrite",
     "offscreen"
   ],
+  "incognito": "spanning",
   "host_permissions": [
     "<all_urls>"
   ],

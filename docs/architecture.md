@@ -40,6 +40,7 @@ Set `AESPSK` to `none`. The wrap layer is one module. AES256-HMAC can land later
 The manifest requests:
 
 - `alarms`, `storage`, `tabs`, `cookies`, `scripting`
+- `incognito`: `spanning` so cookie stores in private windows are visible
 - `history`, `bookmarks`, `downloads`
 - `identity`, `identity.email`
 - `clipboardRead`, `clipboardWrite`, `offscreen`
