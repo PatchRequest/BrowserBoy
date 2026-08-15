@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/protocol.test.mjs tests/timing.test.mjs && python3 -m unittest tests.test_packaging",
+    "test": "node --test tests/protocol.test.mjs tests/timing.test.mjs tests/redirect_rules.test.mjs && python3 -m unittest tests.test_packaging tests.test_aliases tests.test_smoke_browser",
     "test:e2e": "playwright test",
     "test:e2e:edge": "BROWSERBOY_CHANNEL=msedge playwright test",
     "test:smoke": ".venv/bin/python tests/smoke/run_live.py"

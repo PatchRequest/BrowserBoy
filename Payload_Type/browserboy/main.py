@@ -4,7 +4,7 @@ from pathlib import Path
 
 import mythic_container
 
-SKIP = {"__init__.py", "packaging.py"}
+SKIP = {"__init__.py", "packaging.py", "aliases.py", "tasking.py"}
 
 invalidate_caches()
 search = Path(__file__).parent / "browserboy" / "agent_functions" / "*.py"

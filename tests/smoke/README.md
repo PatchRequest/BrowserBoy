@@ -4,7 +4,7 @@ This suite tasks every BrowserBoy command against a real Chromium or Edge instan
 
 ## Coverage
 
-identity, current, tabs (list/create/update/reload/close), inject, cookies, history, bookmarks, downloads, clipboard write/read, request, screenshot, load, run_loaded, sleep, exit.
+identity, current, tabs (list/create/update/reload/close), inject, cookies, history, bookmarks, downloads, clipboard write/read, request, redirect add/hit/clear, screenshot, load, run_loaded, sleep, exit.
 
 `exit` runs last.
 

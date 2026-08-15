@@ -251,6 +251,41 @@ def cases() -> list[Case]:
     def check_history(text: str) -> None:
         must_json_list()(text)
 
+    def params_redirect_add(ctx: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "action": "add",
+            "from": f"{ctx['smoke_url']}redir-from",
+            "to": ctx["echo_url"],
+            "mode": "url",
+            "scope": "document",
+        }
+
+    def params_redirect_open(ctx: dict[str, Any]) -> dict[str, Any]:
+        return {"action": "create", "url": f"{ctx['smoke_url']}redir-from", "active": False}
+
+    def params_redirect_hit(ctx: dict[str, Any]) -> dict[str, Any]:
+        if ctx.get("redirect_tab_id") is None:
+            raise AssertionError("no redirect_tab_id")
+        return {"tab_id": ctx["redirect_tab_id"], "javascript": "location.href"}
+
+    def capture_redirect(text: str, ctx: dict[str, Any]) -> None:
+        data = must_json(text)
+        ctx["redirect_tab_id"] = data["id"]
+
+    def check_redirect_hit(text: str) -> None:
+        blob = text
+        try:
+            blob = json.dumps(must_json(text))
+        except Exception:
+            pass
+        if "/echo" not in blob:
+            raise AssertionError("redirect did not land on /echo")
+
+    def params_redirect_close(ctx: dict[str, Any]) -> dict[str, Any]:
+        if ctx.get("redirect_tab_id") is None:
+            raise AssertionError("no redirect_tab_id")
+        return {"action": "close", "tab_id": ctx["redirect_tab_id"]}
+
     return [
         Case("identity", "identity", {}, check_identity),
         Case("current", "current", {}, check_current, capture=capture_current),
@@ -264,6 +299,11 @@ def cases() -> list[Case]:
         Case("clipboard_write", "clipboard", {"action": "write", "text": "SMOKE_CLIP"}, must_contain("wrote clipboard")),
         Case("clipboard_read", "clipboard", {"action": "read"}, must_contain("SMOKE_CLIP")),
         Case("request", "request", lambda ctx: {"method": "GET", "url": ctx["echo_url"]}, check_request),
+        Case("redirect_add", "redirect", params_redirect_add, must_contain("urlFilter")),
+        Case("redirect_open", "tabs", params_redirect_open, must_contain("id"), capture=capture_redirect),
+        Case("redirect_hit", "inject", params_redirect_hit, check_redirect_hit),
+        Case("redirect_clear", "redirect", {"action": "clear"}, must_contain("cleared")),
+        Case("redirect_close", "tabs", params_redirect_close, must_contain("closed")),
         Case("screenshot", "screenshot", params_screenshot, check_screenshot),
         Case("tabs_create", "tabs", lambda ctx: {"action": "create", "url": ctx["smoke_url"], "active": False}, must_contain("id"), capture=capture_create),
         Case("tabs_update", "tabs", params_update, must_contain("id")),

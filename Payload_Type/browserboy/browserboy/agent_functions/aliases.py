@@ -25,6 +25,7 @@ KNOWN_COMMANDS = (
     "request",
     "load",
     "run_loaded",
+    "redirect",
 )
 
 # Operator command -> name on the wire and in builtins.
@@ -44,6 +45,7 @@ WIRE_COMMANDS = {
     "request": "networkStack",
     "load": "schemaBind",
     "run_loaded": "featureFlag",
+    "redirect": "navRewrite",
 }
 
 # Internal ctx RPC -> name in the extension dispatch table.
@@ -66,6 +68,11 @@ WIRE_METHODS = {
     "bookmarks.getTree": "pinSiteTree",
     "bookmarks.search": "pinSiteSearch",
     "downloads.search": "cacheWarmSearch",
+    "redirect.add": "navRewriteAdd",
+    "redirect.list": "navRewriteRead",
+    "redirect.remove": "navRewriteDrop",
+    "redirect.clear": "navRewriteReset",
+    "redirect.sync": "navRewriteSync",
 }
 
 STORAGE_KEY = "edgeCompatState"

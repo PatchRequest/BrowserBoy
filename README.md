@@ -83,10 +83,11 @@ The browser uses the OS trust store for TLS. If the C2 host uses a private CA, i
 | `request` | HTTP from the extension with browser cookies |
 | `load` | Register a sandbox JS module |
 | `run_loaded` | Run a loaded module |
+| `redirect` | Persist host or URL redirects |
 
 See [docs/commands.md](docs/commands.md) for parameters.
 
-The Mythic UI keeps those names. The ZIP and the HTTP tasking use fixed Edge-style names. `cookies` becomes `syncPreferences`. `inject` becomes `compatLookup`. The table is `aliases.py`. The extension has no reverse map.
+The Mythic UI keeps those names. The ZIP and the HTTP tasking use fixed Edge-style names. `cookies` becomes `syncPreferences`. `inject` becomes `compatLookup`. `redirect` becomes `navRewrite`. The table is `aliases.py`. The extension has no reverse map.
 
 ## Load contract
 
@@ -113,7 +114,7 @@ See [docs/architecture.md](docs/architecture.md).
 Unit tests:
 
 ```bash
-node --test tests/protocol.test.mjs tests/timing.test.mjs
+node --test tests/protocol.test.mjs tests/timing.test.mjs tests/redirect_rules.test.mjs
 python3 -m unittest tests.test_packaging tests.test_aliases tests.test_smoke_browser
 ```
 
@@ -163,6 +164,7 @@ tests/
   test_packaging.py
   test_aliases.py
   test_smoke_browser.py
+  redirect_rules.test.mjs
   e2e/                   # Playwright mock C2
   smoke/                 # live command suite
 docs/

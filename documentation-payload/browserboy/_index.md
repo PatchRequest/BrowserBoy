@@ -40,7 +40,7 @@ The HTTP callback host must be reachable from the browser. The browser verifies 
 
 ## Commands
 
-sleep, exit, identity, tabs, current, cookies, screenshot, inject, history, bookmarks, downloads, clipboard, request, load, run_loaded.
+sleep, exit, identity, tabs, current, cookies, screenshot, inject, history, bookmarks, downloads, clipboard, request, load, run_loaded, redirect.
 
 `load` accepts a JS module that exports `async function run(task, ctx)`. The module runs in a sandbox page. The sandbox has no `chrome.*` APIs. Use `ctx` for tabs, cookies, inject, and request.
 

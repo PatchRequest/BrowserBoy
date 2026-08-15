@@ -5,7 +5,7 @@
 These tests do not need Chrome or Mythic.
 
 ```bash
-node --test tests/protocol.test.mjs tests/timing.test.mjs
+node --test tests/protocol.test.mjs tests/timing.test.mjs tests/redirect_rules.test.mjs
 python3 -m unittest tests.test_packaging tests.test_aliases tests.test_smoke_browser
 ```
 
@@ -14,6 +14,10 @@ python3 -m unittest tests.test_packaging tests.test_aliases tests.test_smoke_bro
 `tests/timing.test.mjs` checks jitter and killdate.
 
 `tests/test_packaging.py` checks config stamp and ZIP contents.
+
+`tests/redirect_rules.test.mjs` checks host and URL redirect filters.
+
+`tests/test_aliases.py` checks the wire-name table.
 
 ## Playwright mock C2
 
@@ -50,6 +54,7 @@ Verified on Microsoft Edge 151 (this repo, headless `--load-extension`):
 | `scripting.executeScript`, `captureVisibleTab` | pass |
 | `alarms`, `offscreen`, clipboard session buffer | pass |
 | Sandbox `eval` and sandbox `ctx` RPC (`load` / `run_loaded` path) | pass |
+| `declarativeNetRequest` add and remove | pass |
 | `identity.getProfileUserInfo` | API present. Email is often empty. |
 
 Live Mythic smoke on Edge uses `--browser msedge`. That run is separate from the Playwright suite.
@@ -58,7 +63,7 @@ Live Mythic smoke on Edge uses `--browser msedge`. That run is separate from the
 
 The suite tasks every command against a real Chromium or Edge instance and a live Mythic server.
 
-Covered cases: identity, current, tabs list/create/update/reload/close, inject, cookies, history, bookmarks, downloads, clipboard write/read, request, screenshot, load, run_loaded, sleep, exit.
+Covered cases: identity, current, tabs list/create/update/reload/close, inject, cookies, history, bookmarks, downloads, clipboard write/read, request, redirect add/hit/clear, screenshot, load, run_loaded, sleep, exit.
 
 `exit` runs last.
 

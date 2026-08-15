@@ -48,6 +48,7 @@ The manifest requests:
 - `history`, `bookmarks`, `downloads`
 - `identity`, `identity.email`
 - `clipboardRead`, `clipboardWrite`, `offscreen`
+- `declarativeNetRequestWithHostAccess` for persistent `redirect` rules
 - host permission `<all_urls>`
 
 A sandbox page runs loaded modules. An offscreen document serves clipboard and sandbox RPC.

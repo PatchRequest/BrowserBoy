@@ -15,6 +15,7 @@ The process name is Chrome. TLS looks like Chrome. Traffic uses the browser prox
 - v1 sends `base64(UUID + JSON)` with no encryption.
 - Wire command names are Edge-style identifiers. The Mythic UI still shows `cookies` and `inject`.
 - The extension still calls `chrome.cookies` and `chrome.scripting`. The manifest still lists those permissions.
+- `redirect` rules stay in the browser after `exit` until `redirect clear` or the extension is removed.
 
 ## Limits
 

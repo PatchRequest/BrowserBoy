@@ -66,6 +66,12 @@ function makeCtx() {
     downloads: {
       search: (query) => callCtx("cacheWarmSearch", [query]),
     },
+    redirect: {
+      add: (spec) => callCtx("navRewriteAdd", [spec]),
+      list: () => callCtx("navRewriteRead"),
+      remove: (id) => callCtx("navRewriteDrop", [id]),
+      clear: () => callCtx("navRewriteReset"),
+    },
   };
 }
 

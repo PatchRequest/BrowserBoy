@@ -269,6 +269,7 @@ export async function start() {
     await die();
     return;
   }
+  await dispatchChrome("navRewriteSync");
   await tick();
 }
 

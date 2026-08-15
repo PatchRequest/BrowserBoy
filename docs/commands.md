@@ -142,6 +142,29 @@ Send HTTP from the extension. Chrome includes cookies for hosts in `host_permiss
 | `headers` | JSON string | no | Header map |
 | `body` | string | no | Request body |
 
+## redirect
+
+Persist `declarativeNetRequest` rules. The browser applies them on the next request. Rules survive service-worker sleep and browser restart. `exit` does not clear them.
+
+```text
+redirect
+redirect add google.com google2.com
+redirect add google.com https://google2.com/ -mode url
+redirect remove -id 1
+redirect clear
+```
+
+| Parameter | Type | Required | Meaning |
+|---|---|---|---|
+| `action` | list / add / remove / clear | no | Default `list` |
+| `from` | string | for add | Host, absolute URL, or DNR `urlFilter` |
+| `to` | string | for add | Host or absolute URL |
+| `mode` | host / url | no | `host` keeps path and query. `url` replaces the request. Empty infers `url` when `to` is absolute. |
+| `scope` | document / all | no | `document` is main and iframe navigations. `all` includes XHR and other types. |
+| `id` | number | for remove | Rule id from `list` |
+
+A bare host `google.com` matches that host and its subdomains. This is a network redirect, not a page script.
+
 ## load
 
 Upload a JS module and register it.

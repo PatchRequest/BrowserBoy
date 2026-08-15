@@ -29,6 +29,7 @@ Leviathan scripts that call `chrome.tabs` directly do not run. New modules must 
 | `ctx.history.search(query)` | History |
 | `ctx.bookmarks.getTree / search` | Bookmarks |
 | `ctx.downloads.search(query)` | Downloads |
+| `ctx.redirect.add / list / remove / clear` | Persistent DNR redirects |
 
 The service worker owns `chrome.*`. The sandbox sends RPC messages to the worker.
 

@@ -27,7 +27,8 @@
     "identity.email",
     "clipboardRead",
     "clipboardWrite",
-    "offscreen"
+    "offscreen",
+    "declarativeNetRequestWithHostAccess"
   ],
   "incognito": "spanning",
   "host_permissions": [

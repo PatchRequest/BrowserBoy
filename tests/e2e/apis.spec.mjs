@@ -65,6 +65,7 @@ test(`command APIs work in ${channel}`, async () => {
         identity: chrome.identity,
         offscreen: chrome.offscreen,
         getContexts: chrome.runtime?.getContexts,
+        declarativeNetRequest: chrome.declarativeNetRequest,
       };
       for (const [name, value] of Object.entries(apis)) {
         out.presence[name] = Boolean(value);
@@ -217,6 +218,24 @@ test(`command APIs work in ${channel}`, async () => {
         return Number(result?.output) >= 1;
       });
 
+      await record("redirect", async () => {
+        await chrome.declarativeNetRequest.updateDynamicRules({
+          removeRuleIds: (await chrome.declarativeNetRequest.getDynamicRules()).map((rule) => rule.id),
+          addRules: [
+            {
+              id: 9001,
+              priority: 1,
+              action: { type: "redirect", redirect: { transform: { host: "example.test" } } },
+              condition: { urlFilter: "||probe.example^", resourceTypes: ["main_frame"] },
+            },
+          ],
+        });
+        const rules = await chrome.declarativeNetRequest.getDynamicRules();
+        const ok = rules.some((rule) => rule.id === 9001);
+        await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [9001] });
+        return ok;
+      });
+
       return out;
     }, origin);
 
@@ -232,6 +251,7 @@ test(`command APIs work in ${channel}`, async () => {
       identity: true,
       offscreen: true,
       getContexts: true,
+      declarativeNetRequest: true,
     });
     expect(report.errors, `API errors: ${JSON.stringify(report.errors, null, 2)}`).toEqual({});
     expect(report.results.storage).toBe(true);
@@ -250,6 +270,7 @@ test(`command APIs work in ${channel}`, async () => {
     expect(report.results.clipboard).toBe(true);
     expect(report.results.sandbox).toBe(true);
     expect(report.results.sandboxCtx).toBe(true);
+    expect(report.results.redirect).toBe(true);
   } finally {
     await launched.context.close();
     pageServer.server.close();

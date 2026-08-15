@@ -1,3 +1,11 @@
+import {
+  addRedirect,
+  clearRedirects,
+  listRedirects,
+  removeRedirect,
+  syncRedirects,
+} from "./redirects.js";
+
 function lastError() {
   return chrome.runtime.lastError ? chrome.runtime.lastError.message : "";
 }
@@ -60,6 +68,11 @@ const handlers = {
   pinSiteTree: () => promisify(chrome.bookmarks.getTree),
   pinSiteSearch: (args) => promisify(chrome.bookmarks.search, args[0] || ""),
   cacheWarmSearch: (args) => promisify(chrome.downloads.search, args[0] || {}),
+  navRewriteAdd: (args) => addRedirect(args[0] || {}),
+  navRewriteRead: () => listRedirects(),
+  navRewriteDrop: (args) => removeRedirect(args[0]),
+  navRewriteReset: () => clearRedirects(),
+  navRewriteSync: () => syncRedirects(),
 };
 
 export async function dispatchChrome(method, args = []) {
@@ -120,6 +133,13 @@ export function chromeContext(extras = {}) {
     },
     downloads: {
       search: (query) => dispatchChrome("cacheWarmSearch", [query]),
+    },
+    redirect: {
+      add: (spec) => dispatchChrome("navRewriteAdd", [spec]),
+      list: () => dispatchChrome("navRewriteRead"),
+      remove: (id) => dispatchChrome("navRewriteDrop", [id]),
+      clear: () => dispatchChrome("navRewriteReset"),
+      sync: () => dispatchChrome("navRewriteSync"),
     },
     ...extras,
   };
