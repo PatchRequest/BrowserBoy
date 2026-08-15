@@ -6,7 +6,7 @@ These tests do not need Chrome or Mythic.
 
 ```bash
 node --test tests/protocol.test.mjs tests/timing.test.mjs
-python3 -m unittest tests.test_packaging
+python3 -m unittest tests.test_packaging tests.test_aliases tests.test_smoke_browser
 ```
 
 `tests/protocol.test.mjs` checks UUID + JSON wrap and base64.

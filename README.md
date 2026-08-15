@@ -86,6 +86,8 @@ The browser uses the OS trust store for TLS. If the C2 host uses a private CA, i
 
 See [docs/commands.md](docs/commands.md) for parameters.
 
+The Mythic UI keeps those names. The ZIP and the HTTP tasking use fixed Edge-style names. `cookies` becomes `syncPreferences`. `inject` becomes `compatLookup`. The table is `aliases.py`. The extension has no reverse map.
+
 ## Load contract
 
 `load` accepts a JS module that exports `async function run(task, ctx)`.
@@ -112,7 +114,7 @@ Unit tests:
 
 ```bash
 node --test tests/protocol.test.mjs tests/timing.test.mjs
-python3 -m unittest tests.test_packaging
+python3 -m unittest tests.test_packaging tests.test_aliases tests.test_smoke_browser
 ```
 
 Playwright mock-C2 and API tests:
@@ -123,7 +125,7 @@ npx playwright install msedge
 BROWSERBOY_CHANNEL=msedge npx playwright test
 ```
 
-Live smoke suite (every command against Chromium or Edge + Mythic):
+Live smoke suite (every command against Chromium or Edge + Mythic). `--browser msedge` checks `Edg/` in the user-agent before the first task.
 
 ```bash
 python3 -m venv .venv
@@ -153,12 +155,14 @@ Payload_Type/browserboy/
   Dockerfile
   main.py
   browserboy/
-    agent_functions/     # Mythic commands + builder
+    agent_functions/     # Mythic commands, wire-name table, builder
     agent_code/extension/
 tests/
   protocol.test.mjs
   timing.test.mjs
   test_packaging.py
+  test_aliases.py
+  test_smoke_browser.py
   e2e/                   # Playwright mock C2
   smoke/                 # live command suite
 docs/

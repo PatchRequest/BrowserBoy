@@ -1,5 +1,7 @@
 from mythic_container.MythicCommandBase import *
 
+from .tasking import wired_tasking
+
 
 class TabsArguments(TaskArguments):
     def __init__(self, command_line, **kwargs):
@@ -70,11 +72,7 @@ class TabsCommand(CommandBase):
             display += f" {taskData.args.get_arg('url')}"
         if taskData.args.get_arg("tab_id") is not None:
             display += f" {taskData.args.get_arg('tab_id')}"
-        return PTTaskCreateTaskingMessageResponse(
-            TaskID=taskData.Task.ID,
-            Success=True,
-            DisplayParams=display,
-        )
+        return wired_tasking(taskData, display)
 
     async def process_response(self, task: PTTaskMessageAllData, response: any) -> PTTaskProcessResponseMessageResponse:
         return PTTaskProcessResponseMessageResponse(TaskID=task.Task.ID, Success=True)

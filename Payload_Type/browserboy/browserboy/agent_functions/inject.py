@@ -1,5 +1,7 @@
 from mythic_container.MythicCommandBase import *
 
+from .tasking import wired_tasking
+
 
 class InjectArguments(TaskArguments):
     def __init__(self, command_line, **kwargs):
@@ -51,11 +53,7 @@ class InjectCommand(CommandBase):
     attributes = CommandAttributes(builtin=True, supported_os=[SupportedOS.Chrome])
 
     async def create_go_tasking(self, taskData: PTTaskMessageAllData) -> PTTaskCreateTaskingMessageResponse:
-        return PTTaskCreateTaskingMessageResponse(
-            TaskID=taskData.Task.ID,
-            Success=True,
-            DisplayParams=f"tab {taskData.args.get_arg('tab_id')}",
-        )
+        return wired_tasking(taskData, f"tab {taskData.args.get_arg('tab_id')}")
 
     async def process_response(self, task: PTTaskMessageAllData, response: any) -> PTTaskProcessResponseMessageResponse:
         return PTTaskProcessResponseMessageResponse(TaskID=task.Task.ID, Success=True)

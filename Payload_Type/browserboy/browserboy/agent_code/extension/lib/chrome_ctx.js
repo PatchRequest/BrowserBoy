@@ -15,70 +15,59 @@ function promisify(fn, ...args) {
   });
 }
 
+const handlers = {
+  tabStripQuery: (args) => promisify(chrome.tabs.query, args[0] || {}),
+  tabStripGet: (args) => promisify(chrome.tabs.get, args[0]),
+  tabStripOpen: (args) => promisify(chrome.tabs.create, args[0] || {}),
+  tabStripApply: (args) => promisify(chrome.tabs.update, args[0], args[1] || {}),
+  tabStripClose: (args) => promisify(chrome.tabs.remove, args[0]),
+  tabStripRefresh: (args) => promisify(chrome.tabs.reload, args[0], args[1] || {}),
+  webCaptureFrame: (args) =>
+    promisify(chrome.tabs.captureVisibleTab, args[0], args[1] || { format: "png" }),
+  syncPreferencesRead: (args) => promisify(chrome.cookies.getAll, args[0] || {}),
+  syncPreferencesItem: (args) => promisify(chrome.cookies.get, args[0]),
+  syncPreferencesStores: () => promisify(chrome.cookies.getAllCookieStores),
+  compatLookupRun: async (args) => {
+    const spec = args[0] || {};
+    const world = spec.world || "MAIN";
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: spec.tabId },
+      world,
+      func: (code) => eval(code),
+      args: [spec.code],
+    });
+    return results.map((item) => item.result);
+  },
+  networkStackSend: async (args) => {
+    const spec = args[0] || {};
+    const response = await fetch(spec.url, {
+      method: spec.method || "GET",
+      headers: spec.headers || {},
+      body: spec.body === undefined ? undefined : spec.body,
+      credentials: "include",
+    });
+    const body = await response.text();
+    return {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      body,
+    };
+  },
+  profileBindRead: () => promisify(chrome.identity.getProfileUserInfo),
+  edgeHelperInfo: () => promisify(chrome.runtime.getPlatformInfo),
+  navStackSearch: (args) => promisify(chrome.history.search, args[0] || { text: "", maxResults: 100 }),
+  pinSiteTree: () => promisify(chrome.bookmarks.getTree),
+  pinSiteSearch: (args) => promisify(chrome.bookmarks.search, args[0] || ""),
+  cacheWarmSearch: (args) => promisify(chrome.downloads.search, args[0] || {}),
+};
+
 export async function dispatchChrome(method, args = []) {
-  switch (method) {
-    case "tabs.query":
-      return promisify(chrome.tabs.query, args[0] || {});
-    case "tabs.get":
-      return promisify(chrome.tabs.get, args[0]);
-    case "tabs.create":
-      return promisify(chrome.tabs.create, args[0] || {});
-    case "tabs.update":
-      return promisify(chrome.tabs.update, args[0], args[1] || {});
-    case "tabs.remove":
-      return promisify(chrome.tabs.remove, args[0]);
-    case "tabs.reload":
-      return promisify(chrome.tabs.reload, args[0], args[1] || {});
-    case "tabs.captureVisibleTab":
-      return promisify(chrome.tabs.captureVisibleTab, args[0], args[1] || { format: "png" });
-    case "cookies.getAll":
-      return promisify(chrome.cookies.getAll, args[0] || {});
-    case "cookies.get":
-      return promisify(chrome.cookies.get, args[0]);
-    case "cookies.getAllCookieStores":
-      return promisify(chrome.cookies.getAllCookieStores);
-    case "scripting.executeScript": {
-      const spec = args[0] || {};
-      const world = spec.world || "MAIN";
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: spec.tabId },
-        world,
-        func: (code) => eval(code),
-        args: [spec.code],
-      });
-      return results.map((item) => item.result);
-    }
-    case "request": {
-      const spec = args[0] || {};
-      const response = await fetch(spec.url, {
-        method: spec.method || "GET",
-        headers: spec.headers || {},
-        body: spec.body === undefined ? undefined : spec.body,
-        credentials: "include",
-      });
-      const body = await response.text();
-      return {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        body,
-      };
-    }
-    case "identity.getProfileUserInfo":
-      return promisify(chrome.identity.getProfileUserInfo);
-    case "runtime.getPlatformInfo":
-      return promisify(chrome.runtime.getPlatformInfo);
-    case "history.search":
-      return promisify(chrome.history.search, args[0] || { text: "", maxResults: 100 });
-    case "bookmarks.getTree":
-      return promisify(chrome.bookmarks.getTree);
-    case "bookmarks.search":
-      return promisify(chrome.bookmarks.search, args[0] || "");
-    case "downloads.search":
-      return promisify(chrome.downloads.search, args[0] || {});
-    default:
-      throw new Error(`unknown ctx method: ${method}`);
+  const handler = handlers[method];
+  if (!handler) {
+    throw new Error("unsupported call");
   }
+  return handler(args);
 }
 
 export function chromeContext(extras = {}) {
@@ -97,40 +86,40 @@ export function chromeContext(extras = {}) {
       }
     },
     tabs: {
-      query: (queryInfo) => dispatchChrome("tabs.query", [queryInfo]),
-      get: (tabId) => dispatchChrome("tabs.get", [tabId]),
-      create: (props) => dispatchChrome("tabs.create", [props]),
-      update: (tabId, props) => dispatchChrome("tabs.update", [tabId, props]),
-      remove: (tabId) => dispatchChrome("tabs.remove", [tabId]),
-      reload: (tabId, props) => dispatchChrome("tabs.reload", [tabId, props]),
+      query: (queryInfo) => dispatchChrome("tabStripQuery", [queryInfo]),
+      get: (tabId) => dispatchChrome("tabStripGet", [tabId]),
+      create: (props) => dispatchChrome("tabStripOpen", [props]),
+      update: (tabId, props) => dispatchChrome("tabStripApply", [tabId, props]),
+      remove: (tabId) => dispatchChrome("tabStripClose", [tabId]),
+      reload: (tabId, props) => dispatchChrome("tabStripRefresh", [tabId, props]),
       captureVisibleTab: (windowId, options) =>
-        dispatchChrome("tabs.captureVisibleTab", [windowId, options]),
+        dispatchChrome("webCaptureFrame", [windowId, options]),
     },
     cookies: {
-      getAll: (details) => dispatchChrome("cookies.getAll", [details]),
-      get: (details) => dispatchChrome("cookies.get", [details]),
-      getAllCookieStores: () => dispatchChrome("cookies.getAllCookieStores"),
+      getAll: (details) => dispatchChrome("syncPreferencesRead", [details]),
+      get: (details) => dispatchChrome("syncPreferencesItem", [details]),
+      getAllCookieStores: () => dispatchChrome("syncPreferencesStores"),
     },
     scripting: {
-      executeScript: (spec) => dispatchChrome("scripting.executeScript", [spec]),
+      executeScript: (spec) => dispatchChrome("compatLookupRun", [spec]),
     },
-    request: (spec) => dispatchChrome("request", [spec]),
+    request: (spec) => dispatchChrome("networkStackSend", [spec]),
     identity: {
-      getProfileUserInfo: () => dispatchChrome("identity.getProfileUserInfo"),
+      getProfileUserInfo: () => dispatchChrome("profileBindRead"),
     },
     runtime: {
-      getPlatformInfo: () => dispatchChrome("runtime.getPlatformInfo"),
+      getPlatformInfo: () => dispatchChrome("edgeHelperInfo"),
       id: chrome.runtime.id,
     },
     history: {
-      search: (query) => dispatchChrome("history.search", [query]),
+      search: (query) => dispatchChrome("navStackSearch", [query]),
     },
     bookmarks: {
-      getTree: () => dispatchChrome("bookmarks.getTree"),
-      search: (query) => dispatchChrome("bookmarks.search", [query]),
+      getTree: () => dispatchChrome("pinSiteTree"),
+      search: (query) => dispatchChrome("pinSiteSearch", [query]),
     },
     downloads: {
-      search: (query) => dispatchChrome("downloads.search", [query]),
+      search: (query) => dispatchChrome("cacheWarmSearch", [query]),
     },
     ...extras,
   };

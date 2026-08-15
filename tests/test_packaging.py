@@ -8,6 +8,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "Payload_Type" / "browserboy"))
 
+from browserboy.agent_functions.aliases import WIRE_COMMANDS, WIRE_METHODS  # noqa: E402
 from browserboy.agent_functions.packaging import (  # noqa: E402
     DEFAULT_EXTENSION_NAME,
     KNOWN_COMMANDS,
@@ -86,9 +87,25 @@ class PackagingTests(unittest.TestCase):
             self.assertNotIn("__BROWSERBOY_CONFIG__", config_js)
             self.assertNotIn("\n  ", config_js)
             commands_js = (dest / "lib" / "commands.js").read_text(encoding="utf-8")
-            self.assertIn("run as tabs", commands_js)
-            self.assertIn("tabs", commands_js)
+            self.assertIn(f"run as {WIRE_COMMANDS['tabs']}", commands_js)
+            self.assertIn(WIRE_COMMANDS["tabs"], commands_js)
+            self.assertNotIn("../commands/tabs.js", commands_js)
             self.assertNotIn("/* __BROWSERBOY_COMMAND_IMPORTS__ */", commands_js)
+            self.assertFalse((dest / "lib" / "aliases.js").exists())
+            self.assertTrue((dest / "commands" / f"{WIRE_COMMANDS['cookies']}.js").is_file())
+            self.assertFalse((dest / "commands" / "cookies.js").exists())
+            stamped = "\n".join(path.read_text(encoding="utf-8") for path in dest.rglob("*.js"))
+            for leak in (
+                '"cookies.getAll"',
+                "'cookies.getAll'",
+                '"scripting.executeScript"',
+                "'scripting.executeScript'",
+                '"tabs.query"',
+                "'tabs.query'",
+            ):
+                self.assertNotIn(leak, stamped)
+            for wire in WIRE_METHODS.values():
+                self.assertIn(wire, stamped)
             agent_js = (dest / "lib" / "agent.js").read_text(encoding="utf-8")
             self.assertNotIn("The service worker starts", agent_js)
             self.assertLess(len(agent_js), 20_000)

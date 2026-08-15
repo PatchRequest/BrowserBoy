@@ -1,6 +1,8 @@
 from mythic_container.MythicCommandBase import *
 from mythic_container.MythicRPC import *
 
+from .tasking import wired_tasking
+
 
 class SleepArguments(TaskArguments):
     def __init__(self, command_line, **kwargs):
@@ -58,11 +60,7 @@ class SleepCommand(CommandBase):
         await SendMythicRPCCallbackUpdate(
             MythicRPCCallbackUpdateMessage(TaskID=taskData.Task.ID, SleepInfo=sleep_info)
         )
-        return PTTaskCreateTaskingMessageResponse(
-            TaskID=taskData.Task.ID,
-            Success=True,
-            DisplayParams=display,
-        )
+        return wired_tasking(taskData, display)
 
     async def process_response(self, task: PTTaskMessageAllData, response: any) -> PTTaskProcessResponseMessageResponse:
         return PTTaskProcessResponseMessageResponse(TaskID=task.Task.ID, Success=True)

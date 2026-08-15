@@ -74,6 +74,10 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 
 const page = context.pages()[0] || await context.newPage();
 await page.goto(smokeUrl, { waitUntil: "domcontentloaded" });
+const fingerprint = await page.evaluate(() => ({
+  userAgent: navigator.userAgent,
+  brands: (navigator.userAgentData?.brands || []).map((item) => item.brand),
+}));
 await page.evaluate(() => {
   const link = document.getElementById("dl");
   if (link) {
@@ -82,7 +86,15 @@ await page.evaluate(() => {
 });
 
 process.stdout.write(
-  `${JSON.stringify({ ready: true, smoke_url: smokeUrl, echo_url: echoUrl, download_url: downloadUrl })}\n`,
+  `${JSON.stringify({
+    ready: true,
+    channel,
+    user_agent: fingerprint.userAgent,
+    brands: fingerprint.brands,
+    smoke_url: smokeUrl,
+    echo_url: echoUrl,
+    download_url: downloadUrl,
+  })}\n`,
 );
 
 const stop = async () => {

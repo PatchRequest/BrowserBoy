@@ -1,5 +1,7 @@
 from mythic_container.MythicCommandBase import *
 
+from .tasking import wired_tasking
+
 
 class BookmarksArguments(TaskArguments):
     def __init__(self, command_line, **kwargs):
@@ -55,11 +57,7 @@ class BookmarksCommand(CommandBase):
         display = taskData.args.get_arg("action") or "list"
         if taskData.args.get_arg("query"):
             display += f" {taskData.args.get_arg('query')}"
-        return PTTaskCreateTaskingMessageResponse(
-            TaskID=taskData.Task.ID,
-            Success=True,
-            DisplayParams=display,
-        )
+        return wired_tasking(taskData, display)
 
     async def process_response(self, task: PTTaskMessageAllData, response: any) -> PTTaskProcessResponseMessageResponse:
         return PTTaskProcessResponseMessageResponse(TaskID=task.Task.ID, Success=True)

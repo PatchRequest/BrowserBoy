@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from .aliases import KNOWN_COMMANDS, WIRE_COMMANDS
+
 CONFIG_MARKER = "__BROWSERBOY_CONFIG__"
 COMMAND_IMPORTS_MARKER = "/* __BROWSERBOY_COMMAND_IMPORTS__ */"
 COMMAND_EXPORTS_MARKER = "/* __BROWSERBOY_COMMAND_EXPORTS__ */"
@@ -36,25 +38,6 @@ DEFAULT_HOMEPAGE_URL = "https://www.microsoft.com/edge"
 DEFAULT_UPDATE_URL = "https://edge.microsoft.com/extensions/update.xml"
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
-
-KNOWN_COMMANDS = (
-    "sleep",
-    "exit",
-    "identity",
-    "tabs",
-    "current",
-    "cookies",
-    "screenshot",
-    "inject",
-    "history",
-    "bookmarks",
-    "downloads",
-    "clipboard",
-    "request",
-    "load",
-    "run_loaded",
-)
-
 
 def normalize_uri(path: str) -> str:
     if not path:
@@ -135,13 +118,20 @@ def build_agent_config(
 
 
 def render_command_registry(command_names: list[str]) -> tuple[str, str]:
-    names = [n for n in command_names if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", n)]
-    imports = "\n".join(
-        f'import {{ run as {name} }} from "../commands/{name}.js";' for name in names
-    )
-    exports = ",\n  ".join(names)
-    export_block = f"{exports}," if exports else ""
-    return imports, export_block
+    imports: list[str] = []
+    exports: list[str] = []
+    for name in command_names:
+        if name not in WIRE_COMMANDS:
+            raise RuntimeError(f"no wire name for command {name!r}")
+        alias = WIRE_COMMANDS[name]
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", alias):
+            raise RuntimeError(f"wire name is not a JS identifier: {alias!r}")
+        imports.append(f'import {{ run as {alias} }} from "../commands/{alias}.js";')
+        exports.append(alias)
+    export_block = ",\n  ".join(exports)
+    if export_block:
+        export_block = f"{export_block},"
+    return "\n".join(imports), export_block
 
 
 def stamp_text(template: str, replacements: dict[str, str]) -> str:
@@ -163,6 +153,24 @@ def minify_js(source: str) -> str:
 def validate_png(data: bytes) -> None:
     if not data or not data.startswith(PNG_MAGIC):
         raise ValueError("extension icon must be a PNG file")
+
+
+def _rename_command_files(dest_dir: Path, command_names: list[str]) -> None:
+    commands_dir = dest_dir / "commands"
+    if not commands_dir.is_dir():
+        return
+    selected = set(command_names)
+    for path in list(commands_dir.glob("*.js")):
+        if path.stem not in selected:
+            path.unlink()
+            continue
+        alias = WIRE_COMMANDS[path.stem]
+        target = commands_dir / f"{alias}.js"
+        if target == path:
+            continue
+        if target.exists():
+            raise RuntimeError(f"command alias collision at {target.name}")
+        path.rename(target)
 
 
 def write_extension_icon(extension_dir: Path, icon_png: bytes) -> None:
@@ -194,6 +202,11 @@ def stamp_extension(
     if dest_dir.exists():
         shutil.rmtree(dest_dir)
     shutil.copytree(source_dir, dest_dir)
+
+    aliases_path = dest_dir / "lib" / "aliases.js"
+    if aliases_path.exists():
+        aliases_path.unlink()
+    _rename_command_files(dest_dir, command_names)
 
     config_path = dest_dir / "lib" / "config.js"
     config_path.write_text(
@@ -237,13 +250,6 @@ def stamp_extension(
         ),
         encoding="utf-8",
     )
-
-    selected = set(command_names)
-    commands_dir = dest_dir / "commands"
-    if commands_dir.is_dir():
-        for path in commands_dir.glob("*.js"):
-            if path.stem not in selected:
-                path.unlink()
 
     if icon_png is not None:
         write_extension_icon(dest_dir, icon_png)

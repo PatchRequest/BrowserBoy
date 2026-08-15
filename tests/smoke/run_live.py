@@ -32,6 +32,25 @@ def _env(name: str, default: str | None = None) -> str | None:
     return default
 
 
+def normalize_browser(name: str) -> str:
+    raw = (name or "chromium").strip().lower()
+    if raw in {"edge", "msedge", "microsoft-edge"}:
+        return "msedge"
+    if raw in {"chromium", "chrome"}:
+        return "chromium"
+    raise SystemExit(f"unsupported browser {name!r}")
+
+
+def assert_browser_fingerprint(channel: str, user_agent: str, brands: list[str]) -> None:
+    ua = user_agent or ""
+    names = [item.lower() for item in brands]
+    is_edge = "edg/" in ua.lower() or any("microsoft edge" in item or item == "edge" for item in names)
+    if channel == "msedge" and not is_edge:
+        raise SystemExit(f"requested msedge, got userAgent={ua!r} brands={brands}")
+    if channel == "chromium" and is_edge:
+        raise SystemExit(f"requested chromium, got Edge userAgent={ua!r} brands={brands}")
+
+
 def parse_env_text(raw: str) -> dict[str, str]:
     parsed: dict[str, str] = {}
     for line in raw.splitlines():
@@ -334,10 +353,11 @@ async def async_main(args: argparse.Namespace) -> int:
     existing = await newest_chrome_callback(client, 0)
     after_id = int(existing["id"]) if existing else 0
 
+    browser = normalize_browser(args.browser)
     env = os.environ.copy()
     env["BROWSERBOY_EXTENSION"] = str(extension)
     env["BROWSERBOY_HOLD_MS"] = str(args.hold_ms)
-    env["BROWSERBOY_CHANNEL"] = args.browser
+    env["BROWSERBOY_CHANNEL"] = browser
     proc = subprocess.Popen(
         ["node", str(ROOT / "tests" / "smoke" / "hold_browser.mjs")],
         cwd=str(ROOT),
@@ -364,6 +384,11 @@ async def async_main(args: argparse.Namespace) -> int:
         proc.kill()
         raise SystemExit(f"browser holder failed to start: {proc.stdout.read() if proc.stdout else ''}")
 
+    user_agent = str(ready.get("user_agent") or "")
+    brands = [str(item) for item in ready.get("brands") or []]
+    assert_browser_fingerprint(browser, user_agent, brands)
+    print(f"browser {browser}  ua={user_agent}  brands={brands}")
+
     try:
         callback = await wait_for_callback(client, after_id, timeout_s=25)
         ctx = {
@@ -384,6 +409,9 @@ async def async_main(args: argparse.Namespace) -> int:
         report = {
             "callback_id": callback["id"],
             "agent_callback_id": callback.get("agent_callback_id"),
+            "browser": browser,
+            "user_agent": user_agent,
+            "brands": brands,
             "smoke_url": ready["smoke_url"],
             "results": [result.__dict__ for result in results],
             "passed": sum(1 for result in results if result.ok),

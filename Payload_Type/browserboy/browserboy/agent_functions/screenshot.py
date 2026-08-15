@@ -1,5 +1,7 @@
 from mythic_container.MythicCommandBase import *
 
+from .tasking import wired_tasking
+
 
 class ScreenshotArguments(TaskArguments):
     def __init__(self, command_line, **kwargs):
@@ -47,11 +49,7 @@ class ScreenshotCommand(CommandBase):
     async def create_go_tasking(self, taskData: PTTaskMessageAllData) -> PTTaskCreateTaskingMessageResponse:
         tab_id = taskData.args.get_arg("tab_id")
         display = f"tab {tab_id}" if tab_id is not None else "visible tab"
-        return PTTaskCreateTaskingMessageResponse(
-            TaskID=taskData.Task.ID,
-            Success=True,
-            DisplayParams=display,
-        )
+        return wired_tasking(taskData, display)
 
     async def process_response(self, task: PTTaskMessageAllData, response: any) -> PTTaskProcessResponseMessageResponse:
         return PTTaskProcessResponseMessageResponse(TaskID=task.Task.ID, Success=True)

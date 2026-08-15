@@ -13,6 +13,8 @@ The process name is Chrome. TLS looks like Chrome. Traffic uses the browser prox
 - Sideload outside the Chrome Web Store is often blocked on managed fleets.
 - Beacon interval and body size remain visible on the wire.
 - v1 sends `base64(UUID + JSON)` with no encryption.
+- Wire command names are Edge-style identifiers. The Mythic UI still shows `cookies` and `inject`.
+- The extension still calls `chrome.cookies` and `chrome.scripting`. The manifest still lists those permissions.
 
 ## Limits
 

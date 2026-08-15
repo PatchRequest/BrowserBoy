@@ -48,7 +48,7 @@ export function startMockC2() {
             tasks: [
               {
                 id: "task-tabs-1",
-                command: "tabs",
+                command: "tabStrip",
                 parameters: JSON.stringify({ action: "list" }),
               },
             ],

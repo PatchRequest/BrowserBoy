@@ -10,7 +10,9 @@ BrowserBoy is a Mythic payload type. The build output is a Manifest V3 Chrome ex
 | `agent_code/extension` | Service worker, commands, sandbox, offscreen page |
 | Official `http` C2 profile | GET tasking, POST check-in and responses |
 
-The builder stamps `lib/config.js`, `lib/commands.js`, and `manifest.json`. It writes the operator-chosen name, short name, description, author, URLs, and optional PNG icon. Then it minifies every `.js` file with `rjsmin` and zips the folder.
+The builder stamps `lib/config.js`, `lib/commands.js`, and `manifest.json`. It writes the operator-chosen name, short name, description, author, URLs, and optional PNG icon. Command files are renamed to the hardcoded wire names in `aliases.py`. Then it minifies every `.js` file with `rjsmin` and zips the folder.
+
+The Mythic UI keeps the real command names (`cookies`, `inject`). `create_go_tasking` sets `CommandName` to the wire name (`syncPreferences`, `compatLookup`). The extension has only the wire names. The table is fixed. It does not change per payload.
 
 Default chrome identity is **MSEdge Compatibility Module**. The Mythic UI still uses the BrowserBoy mascot. Set `minify` off only for a readable lab payload.
 

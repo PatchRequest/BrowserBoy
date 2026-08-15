@@ -1,6 +1,8 @@
 from mythic_container.MythicCommandBase import *
 from mythic_container.MythicRPC import *
 
+from .tasking import wired_tasking
+
 
 class LoadArguments(TaskArguments):
     def __init__(self, command_line, **kwargs):
@@ -52,11 +54,7 @@ class LoadCommand(CommandBase):
             raise Exception(f"failed to find uploaded file: {search.Error}")
         taskData.args.add_arg("file_id", search.Files[0].AgentFileId)
         taskData.args.remove_arg("file")
-        return PTTaskCreateTaskingMessageResponse(
-            TaskID=taskData.Task.ID,
-            Success=True,
-            DisplayParams=name,
-        )
+        return wired_tasking(taskData, name)
 
     async def process_response(self, task: PTTaskMessageAllData, response: any) -> PTTaskProcessResponseMessageResponse:
         return PTTaskProcessResponseMessageResponse(TaskID=task.Task.ID, Success=True)
